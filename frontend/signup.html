@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="Untree.co">
+  <link rel="shortcut icon" href="favicon.png">
+
+  <meta name="description" content="" />
+  <meta name="keywords" content="bootstrap, bootstrap4" />
+
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="css/tiny-slider.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/custom-alerts.css" rel="stylesheet">
+  <title>Sign Up - Furni</title>
+</head>
+
+<body>
+
+  <!-- Include Header/Navigation -->
+  <div include-html="includes/header.html"></div>
+
+  <!-- Start Sign Up Section -->
+  <div class="untree_co-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mb-5 mb-md-0 mx-auto">
+          <h2 class="h3 mb-3 text-black">Create an Account</h2>
+          <div class="p-3 p-lg-5 border bg-white">
+            <form id="signupForm">
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="name" class="text-black">Full Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+              </div>
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="email" class="text-black">Email <span class="text-danger">*</span></label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+              </div>
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="password" class="text-black">Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control" id="password" name="password" required>
+                  <div class="password-requirements mt-2">
+                    <p class="mb-1 small">Password must contain:</p>
+                    <ul class="list-unstyled small">
+                      <li id="length-check"><i class="fas fa-times-circle text-danger me-1"></i> At least 8 characters</li>
+                      <li id="uppercase-check"><i class="fas fa-times-circle text-danger me-1"></i> At least one uppercase letter</li>
+                      <li id="lowercase-check"><i class="fas fa-times-circle text-danger me-1"></i> At least one lowercase letter</li>
+                      <li id="number-check"><i class="fas fa-times-circle text-danger me-1"></i> At least one number</li>
+                      <li id="special-check"><i class="fas fa-times-circle text-danger me-1"></i> At least one special character</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="confirmPassword" class="text-black">Confirm Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                </div>
+              </div>
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="phone" class="text-black">Phone (Optional)</label>
+                  <input type="tel" class="form-control" id="phone" name="phone">
+                </div>
+              </div>
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <div class="alert alert-danger alert-with-title d-none" id="error-message" role="alert">
+                    <div class="alert-icon">
+                      <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="alert-content">
+                      <div class="alert-title">Registration Error</div>
+                      <p class="alert-message"></p>
+                    </div>
+                    <button type="button" class="close" onclick="this.parentElement.classList.add('d-none');">&times;</button>
+                  </div>
+                  <div class="alert alert-success alert-with-title d-none" id="success-message" role="alert">
+                    <div class="alert-icon">
+                      <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="alert-content">
+                      <div class="alert-title">Registration Successful</div>
+                      <p class="alert-message"></p>
+                    </div>
+                    <button type="button" class="close" onclick="this.parentElement.classList.add('d-none');">&times;</button>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-md-12">
+                  <button type="submit" class="btn btn-primary btn-lg py-3 btn-block">Sign Up</button>
+                  <p class="mt-3">Already have an account? <a href="login.html">Login</a></p>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Sign Up Section -->
+
+  <!-- Include Footer -->
+  <div include-html="includes/footer.html"></div>
+
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/tiny-slider.js"></script>
+  <script src="js/include-html.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/custom.js"></script>
+  <script>
+    document.getElementById('password').addEventListener('input', function() {
+      const password = this.value;
+      
+      // Check length
+      const lengthCheck = document.getElementById('length-check');
+      if (password.length >= 8) {
+        lengthCheck.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> At least 8 characters';
+      } else {
+        lengthCheck.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i> At least 8 characters';
+      }
+      
+      // Check uppercase
+      const uppercaseCheck = document.getElementById('uppercase-check');
+      if (/[A-Z]/.test(password)) {
+        uppercaseCheck.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> At least one uppercase letter';
+      } else {
+        uppercaseCheck.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i> At least one uppercase letter';
+      }
+      
+      // Check lowercase
+      const lowercaseCheck = document.getElementById('lowercase-check');
+      if (/[a-z]/.test(password)) {
+        lowercaseCheck.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> At least one lowercase letter';
+      } else {
+        lowercaseCheck.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i> At least one lowercase letter';
+      }
+      
+      // Check number
+      const numberCheck = document.getElementById('number-check');
+      if (/[0-9]/.test(password)) {
+        numberCheck.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> At least one number';
+      } else {
+        numberCheck.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i> At least one number';
+      }
+      
+      // Check special character
+      const specialCheck = document.getElementById('special-check');
+      if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        specialCheck.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> At least one special character';
+      } else {
+        specialCheck.innerHTML = '<i class="fas fa-times-circle text-danger me-1"></i> At least one special character';
+      }
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const phone = document.getElementById('phone').value;
+      const errorMessage = document.getElementById('error-message');
+      
+      // Clear previous error messages
+      errorMessage.classList.add('d-none');
+      
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        const errorElement = document.getElementById('error-message');
+        errorElement.querySelector('.alert-message').textContent = 'Passwords do not match';
+        errorElement.classList.remove('d-none');
+        return;
+      }
+      
+      // Validate password requirements
+      const lengthValid = password.length >= 8;
+      const uppercaseValid = /[A-Z]/.test(password);
+      const lowercaseValid = /[a-z]/.test(password);
+      const numberValid = /[0-9]/.test(password);
+      const specialValid = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+      
+      if (!(lengthValid && uppercaseValid && lowercaseValid && numberValid && specialValid)) {
+        const errorElement = document.getElementById('error-message');
+        errorElement.querySelector('.alert-message').textContent = 'Please meet all password requirements';
+        errorElement.classList.remove('d-none');
+        return;
+      }
+      
+      // Register user directly with API
+      try {
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            name, 
+            email, 
+            password,
+            phone
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          const errorElement = document.getElementById('error-message');
+          errorElement.querySelector('.alert-message').textContent = data.message || 'Registration failed';
+          errorElement.classList.remove('d-none');
+          document.getElementById('success-message').classList.add('d-none');
+          return;
+        }
+        
+        // Registration successful
+        const successElement = document.getElementById('success-message');
+        successElement.querySelector('.alert-message').textContent = 'Registration successful! You can now log in.';
+        successElement.classList.remove('d-none');
+        document.getElementById('error-message').classList.add('d-none');
+        
+        // Clear form
+        document.getElementById('signupForm').reset();
+        
+        // Redirect after delay
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 3000);
+      } catch (error) {
+        console.error('Registration error:', error);
+        const errorElement = document.getElementById('error-message');
+        errorElement.querySelector('.alert-message').textContent = 'An error occurred during registration. Please try again.';
+        errorElement.classList.remove('d-none');
+        document.getElementById('success-message').classList.add('d-none');
+      }
+    });
+  </script>
+</body>
+</html>
+  <style>
+    .password-requirements {
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px 15px;
+      background-color: #f8f9fa;
+    }
+    
+    .password-requirements li {
+      margin-bottom: 5px;
+    }
+    
+    .password-strength-meter {
+      height: 5px;
+      background-color: #e9ecef;
+      margin-top: 10px;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .password-strength-meter-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+    
+    .strength-weak {
+      background-color: #dc3545;
+      width: 20%;
+    }
+    
+    .strength-fair {
+      background-color: #ffc107;
+      width: 50%;
+    }
+    
+    .strength-good {
+      background-color: #28a745;
+      width: 80%;
+    }
+    
+    .strength-strong {
+      background-color: #20c997;
+      width: 100%;
+    }
+  </style>

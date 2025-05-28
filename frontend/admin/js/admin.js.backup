@@ -1,0 +1,1604 @@
+  // Function to show toast notifications
+  function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0 animate__animated animate__fadeInUp`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast, {
+      autohide: true,
+      delay: 3000
+    });
+    
+    bsToast.show();
+    
+    // Remove the toast after it's hidden
+    toast.addEventListener('hidden.bs.toast', function() {
+      toast.remove();
+    });
+  }
+
+  // Function to check authentication
+  function checkAuthentication() {
+    const token = localStorage.getItem('adminToken'); // Changed from 'token' to 'adminToken'
+    if (!token) {
+      showToast('Please log in to access admin features', 'warning');
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 2000);
+      return false;
+    }
+    return true;
+  }
+  
+  // Check authentication when the page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!checkAuthentication()) {
+      return;
+    }
+    
+    // Set up color checkbox listeners
+  const colorCheckboxes = document.querySelectorAll('.color-checkbox');
+  const selectedColorsPreview = document.getElementById('selected-colors-preview');
+  
+  if (colorCheckboxes.length > 0 && selectedColorsPreview) {
+    colorCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', updateSelectedColorsPreview);
+    });
+    
+    // Initial update
+    updateSelectedColorsPreview();
+  }
+  
+  function updateSelectedColorsPreview() {
+    const selectedColors = [];
+    document.querySelectorAll('.color-checkbox:checked').forEach(checkbox => {
+      selectedColors.push(checkbox.value);
+    });
+    
+    if (selectedColors.length > 0) {
+      selectedColorsPreview.innerHTML = `
+        <div class="alert alert-info">
+          <strong>Selected colors:</strong> ${selectedColors.join(', ')}
+        </div>
+      `;
+    } else {
+      selectedColorsPreview.innerHTML = `
+        <div class="alert alert-warning">
+          <strong>No colors selected.</strong> Please select at least one color.
+        </div>
+      `;
+    }
+  }
+  
+  // Set up material checkbox listeners
+  const materialCheckboxes = document.querySelectorAll('.material-checkbox');
+  const selectedMaterialsPreview = document.getElementById('selected-materials-preview');
+  
+  if (materialCheckboxes.length > 0 && selectedMaterialsPreview) {
+    materialCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', updateSelectedMaterialsPreview);
+    });
+    
+    // Initial update
+    updateSelectedMaterialsPreview();
+  }
+  
+  function updateSelectedMaterialsPreview() {
+    const selectedMaterials = [];
+    document.querySelectorAll('.material-checkbox:checked').forEach(checkbox => {
+      selectedMaterials.push(checkbox.value);
+    });
+    
+    if (selectedMaterials.length > 0) {
+      selectedMaterialsPreview.innerHTML = `
+        <div class="alert alert-info">
+          <strong>Selected materials:</strong> ${selectedMaterials.join(', ')}
+        </div>
+      `;
+    } else {
+      selectedMaterialsPreview.innerHTML = `
+        <div class="alert alert-warning">
+          <strong>No materials selected.</strong> Please select at least one material.
+        </div>
+      `;
+    }
+  }
+  
+  // Navigation and content switching
+  const dashboardLink = document.getElementById('dashboard-link');
+  const productsLink = document.getElementById('products-link');
+  const ordersLink = document.getElementById('orders-link');
+  const usersLink = document.getElementById('users-link');
+  const reviewsLink = document.getElementById('reviews-link');
+  
+  const dashboardContent = document.getElementById('dashboard-content');
+  const productsContent = document.getElementById('products-content');
+  const ordersContent = document.getElementById('orders-content');
+  const usersContent = document.getElementById('users-content');
+  const reviewsContent = document.getElementById('reviews-content');
+  
+  const pageTitle = document.getElementById('page-title');
+  
+  // Function to hide all content sections
+  function hideAllSections() {
+    dashboardContent.classList.add('d-none');
+    productsContent.classList.add('d-none');
+    ordersContent.classList.add('d-none');
+    usersContent.classList.add('d-none');
+    reviewsContent.classList.add('d-none');
+    
+    // Remove active class from all nav links
+    dashboardLink.classList.remove('active');
+    productsLink.classList.remove('active');
+    ordersLink.classList.remove('active');
+    usersLink.classList.remove('active');
+    reviewsLink.classList.remove('active');
+  }
+  
+  // Function to load dashboard data
+  function loadDashboardData() {
+    const token = localStorage.getItem('adminToken');
+    
+    if (!token) {
+      console.error('No authentication token found');
+      return;
+    }
+    
+    // Fetch dashboard stats
+    fetch('/api/admin/dashboard', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Update dashboard stats
+      document.getElementById('total-orders').textContent = `$${(data.totalOrders || 0).toFixed(2)}`;
+      document.getElementById('total-revenue').textContent = `$${(data.totalRevenue || 0).toFixed(2)}`;
+      document.getElementById('total-products').textContent = data.totalProducts || 0;
+      document.getElementById('total-users').textContent = data.totalUsers || 0;
+      
+      // Update recent orders
+      updateRecentOrders(data.recentOrders || []);
+      
+      // Update top products
+      updateTopProducts(data.topProducts || []);
+    })
+    .catch(error => {
+      console.error('Error loading dashboard data:', error);
+    });
+  }
+  
+  // Function to update recent orders table
+  function updateRecentOrders(orders) {
+    const recentOrdersTable = document.getElementById('recent-orders');
+    
+    if (!recentOrdersTable) {
+      console.error('Recent orders table element not found');
+      return;
+    }
+    
+    if (orders.length === 0) {
+      recentOrdersTable.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders</td></tr>';
+      return;
+    }
+    
+    recentOrdersTable.innerHTML = '';
+    
+    orders.forEach(order => {
+      const row = document.createElement('tr');
+      
+      // Format date
+      const orderDate = new Date(order.createdAt).toLocaleDateString();
+      
+      // Create status badge
+      let statusBadgeClass = 'bg-secondary';
+      if (order.status === 'Delivered') statusBadgeClass = 'bg-success';
+      else if (order.status === 'Processing') statusBadgeClass = 'bg-primary';
+      else if (order.status === 'Shipped') statusBadgeClass = 'bg-info';
+      else if (order.status === 'Cancelled') statusBadgeClass = 'bg-danger';
+      else if (order.status === 'Pending') statusBadgeClass = 'bg-warning';
+      
+      row.innerHTML = `
+        <td>${order._id.substring(0, 8)}...</td>
+        <td>${order.user ? order.user.name : 'Unknown'}</td>
+        <td>${orderDate}</td>
+        <td>$${order.totalPrice.toFixed(2)}</td>
+        <td><span class="badge ${statusBadgeClass}">${order.status}</span></td>
+      `;
+      
+      recentOrdersTable.appendChild(row);
+    });
+  }
+  
+  // Function to update top products list
+  function updateTopProducts(products) {
+    const topProductsList = document.getElementById('top-products');
+    
+    if (!topProductsList) {
+      console.error('Top products list element not found');
+      return;
+    }
+    
+    if (products.length === 0) {
+      topProductsList.innerHTML = '<li class="list-group-item text-center">No products found</li>';
+      return;
+    }
+    
+    topProductsList.innerHTML = '';
+    
+    products.forEach(product => {
+      const listItem = document.createElement('li');
+      listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+      
+      listItem.innerHTML = `
+        <div class="d-flex align-items-center">
+          <img src="${product.images && product.images.length > 0 ? product.images[0] : '/images/product-default.png'}" 
+               alt="${product.name}" width="40" height="40" class="me-2" style="object-fit: cover;">
+          <span>${product.name}</span>
+        </div>
+        <span class="badge bg-primary rounded-pill">$${product.price.toFixed(2)}</span>
+      `;
+      
+      topProductsList.appendChild(listItem);
+    });
+  }
+  
+  // Dashboard link
+  dashboardLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideAllSections();
+    dashboardContent.classList.remove('d-none');
+    dashboardLink.classList.add('active');
+    pageTitle.textContent = 'Dashboard';
+    // Load dashboard data
+    loadDashboardData();
+  });
+  
+  // Products link
+  productsLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideAllSections();
+    productsContent.classList.remove('d-none');
+    productsLink.classList.add('active');
+    pageTitle.textContent = 'Products';
+    // Load products data here
+    loadProducts();
+  });
+  
+  // Orders link
+  // Add HTML for order filters at the top of the orders section
+  document.addEventListener('DOMContentLoaded', function() {
+    const ordersContentDiv = document.getElementById('orders-content');
+    if (ordersContentDiv) {
+      // Check if filters already exist
+      if (!document.getElementById('order-filters')) {
+        const filtersHTML = `
+          <div id="order-filters" class="row mb-4">
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text">Status</span>
+                <select id="order-status-filter" class="form-select">
+                  <option value="all" selected>All Orders</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="input-group">
+                <input type="text" id="order-search" class="form-control" placeholder="Search orders by ID, customer, payment status, or total">
+                <button class="btn btn-primary" id="order-search-btn">
+                  <i class="fas fa-search"></i> Search
+                </button>
+                <button class="btn btn-secondary" id="order-reset-btn">
+                  <i class="fas fa-redo"></i> Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Insert filters at the beginning of the orders content
+        const firstChild = ordersContentDiv.firstChild;
+        const filterDiv = document.createElement('div');
+        filterDiv.innerHTML = filtersHTML;
+        ordersContentDiv.insertBefore(filterDiv, firstChild);
+      }
+      
+      // Add event listeners for filters
+      const statusFilter = document.getElementById('order-status-filter');
+      const searchInput = document.getElementById('order-search');
+      const searchBtn = document.getElementById('order-search-btn');
+      const resetBtn = document.getElementById('order-reset-btn');
+      
+      if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+          loadOrders();
+        });
+      }
+      
+      if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+          loadOrders();
+        });
+      }
+      
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            loadOrders();
+          }
+        });
+      }
+      
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+          if (statusFilter) statusFilter.value = '';
+          if (searchInput) searchInput.value = '';
+          loadOrders();
+        });
+      }
+    }
+  });
+
+  ordersLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideAllSections();
+    ordersContent.classList.remove('d-none');
+    ordersLink.classList.add('active');
+    pageTitle.textContent = 'Orders';
+    
+    // Make sure the status filter is set to "All Orders"
+    const statusFilter = document.getElementById('order-status-filter');
+    if (statusFilter) {
+      statusFilter.value = '';
+    }
+    
+    // Clear the search input
+    const searchInput = document.getElementById('order-search');
+    if (searchInput) {
+      searchInput.value = '';
+    }
+    
+    // Load orders data
+    loadOrders();
+  });
+  
+  // Users link
+  usersLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideAllSections();
+    usersContent.classList.remove('d-none');
+    usersLink.classList.add('active');
+    pageTitle.textContent = 'Users';
+    
+    // Make sure the role filter is set to "All Roles"
+    const roleFilter = document.getElementById('user-role-filter');
+    if (roleFilter) {
+      roleFilter.value = '';
+    }
+    
+    // Clear the search input
+    const searchInput = document.getElementById('user-search');
+    if (searchInput) {
+      searchInput.value = '';
+    }
+    
+    // Load users data
+    loadUsers();
+  });
+  
+  // Reviews link
+  reviewsLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    hideAllSections();
+    reviewsContent.classList.remove('d-none');
+    reviewsLink.classList.add('active');
+    pageTitle.textContent = 'Reviews';
+    // Load reviews data
+    loadReviews();
+  });
+  
+  // Product table row click handler
+  function setupProductRowClickHandlers() {
+    const productRows = document.querySelectorAll('#products-table tr[data-product-id]');
+    productRows.forEach(row => {
+      row.addEventListener('click', function() {
+        const productId = this.getAttribute('data-product-id');
+        openProductEditModal(productId);
+      });
+    });
+  }
+  
+  // Function to load products
+  function loadProducts() {
+    const productsTable = document.getElementById('products-table');
+    
+    // Show loading indicator
+    productsTable.innerHTML = '<tr><td colspan="9" class="text-center">Loading products...</td></tr>';
+    
+    // Get token from localStorage
+    const token = localStorage.getItem('adminToken');
+    
+    // Fetch products from API
+    fetch('/api/products', {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : ''
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch products');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Check if data is in the expected format
+        // The API might return { products: [...] } instead of just an array
+        const products = Array.isArray(data) ? data : 
+                        (data.products ? data.products : 
+                        (data.data ? data.data : []));
+        
+        if (products.length === 0) {
+          productsTable.innerHTML = '<tr><td colspan="9" class="text-center">No products found</td></tr>';
+          return;
+        }
+        
+        // Clear the table
+        productsTable.innerHTML = '';
+        
+        // Add products to the table
+        products.forEach(product => {
+          const row = document.createElement('tr');
+          row.setAttribute('data-product-id', product._id);
+          row.style.cursor = 'pointer';
+          
+          // Format the color display
+          const colorDisplay = product.color && Array.isArray(product.color) && product.color.length > 0 
+            ? product.color.map(color => `<span class="badge bg-${color}">${color}</span>`).join(' ')
+            : 'N/A';
+            
+          // Format the material display
+          const materialDisplay = product.material ? 
+            (Array.isArray(product.material) ? product.material.join(', ') : product.material) 
+            : 'N/A';
+          
+          // Handle image display
+          let imageUrl = '/images/product-default.png';
+          if (product.images) {
+            if (Array.isArray(product.images) && product.images.length > 0) {
+              imageUrl = product.images[0];
+            } else if (typeof product.images === 'string') {
+              imageUrl = product.images;
+            }
+          }
+            
+          row.innerHTML = `
+            <td><img src="${imageUrl}" alt="${product.name}" width="50" height="50" style="object-fit: cover;"></td>
+            <td>${product.name}</td>
+            <td>${product.category || 'N/A'}</td>
+            <td>$${product.price.toFixed(2)}</td>
+            <td>${product.countInStock}</td>
+            <td>${colorDisplay}</td>
+            <td>${materialDisplay}</td>
+            <td>${product.featured ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>'}</td>
+            <td>
+              <button class="btn btn-sm btn-primary edit-product" data-id="${product._id}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-danger delete-product" data-id="${product._id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          `;
+          
+          productsTable.appendChild(row);
+        });
+        
+        // Set up click handlers for the product rows
+        setupProductRowClickHandlers();
+        
+        // Set up edit and delete button handlers
+        setupProductActionButtons();
+      })
+      .catch(error => {
+        console.error('Error loading products:', error);
+        productsTable.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Error loading products: ${error.message}</td></tr>`;
+      });
+  }
+  
+  // Function to set up product action buttons
+  function setupProductActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-product').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent row click
+        const productId = this.getAttribute('data-id');
+        openProductEditModal(productId);
+      });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-product').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent row click
+        const productId = this.getAttribute('data-id');
+        if (confirm('Are you sure you want to delete this product?')) {
+          deleteProduct(productId);
+        }
+      });
+    });
+  }
+  
+  // Function to open product edit modal
+  function openProductEditModal(productId) {
+    const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+    const modalTitle = document.getElementById('productModalLabel');
+    const productForm = document.getElementById('product-form');
+    const productIdInput = document.getElementById('product-id');
+    
+    // Reset form
+    productForm.reset();
+    
+    if (productId) {
+      modalTitle.textContent = 'Edit Product';
+      productIdInput.value = productId;
+      
+      // Fetch product details
+      fetch(`/api/products/${productId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch product details');
+          }
+          return response.json();
+        })
+        .then(product => {
+          console.log("Product details for edit:", product);
+          
+          // Fill the form with product details
+          document.getElementById('product-name').value = product.name;
+          document.getElementById('product-category').value = product.category || '';
+          document.getElementById('product-price').value = product.price;
+          document.getElementById('product-stock').value = product.countInStock;
+          document.getElementById('product-discount').value = product.discount || 0;
+          document.getElementById('product-description').value = product.description || '';
+          
+          // Set materials (handle both string and array formats)
+          if (product.material) {
+            let materials = [];
+            if (typeof product.material === 'string') {
+              // Split by comma and trim whitespace
+              materials = product.material.split(',').map(m => m.trim());
+            } else if (Array.isArray(product.material)) {
+              materials = product.material;
+            }
+            
+            // Reset all checkboxes first
+            document.querySelectorAll('.material-checkbox').forEach(checkbox => {
+              checkbox.checked = false;
+            });
+            
+            // Check the appropriate checkboxes
+            materials.forEach(material => {
+              const checkbox = document.getElementById(`material-${material.trim()}`);
+              if (checkbox) {
+                checkbox.checked = true;
+              }
+            });
+            updateSelectedMaterialsPreview();
+          }
+          
+          document.getElementById('product-featured').checked = product.featured || false;
+          
+          // Set colors
+          if (product.color && Array.isArray(product.color) && product.color.length > 0) {
+            product.color.forEach(color => {
+              const checkbox = document.getElementById(`color-${color}`);
+              if (checkbox) {
+                checkbox.checked = true;
+              }
+            });
+            updateSelectedColorsPreview();
+          }
+          
+          // Show the modal
+          productModal.show();
+        })
+        .catch(error => {
+          console.error('Error fetching product details:', error);
+          alert(`Error fetching product details: ${error.message}`);
+        });
+    } else {
+      modalTitle.textContent = 'Add Product';
+      productIdInput.value = '';
+      productModal.show();
+    }
+  }
+  
+  // Function to load users
+  function loadUsers() {
+    const usersTable = document.getElementById('users-table');
+    
+    // Get filter values
+    const roleFilter = document.getElementById('user-role-filter') ? 
+                      document.getElementById('user-role-filter').value : '';
+    const searchQuery = document.getElementById('user-search') ? 
+                     document.getElementById('user-search').value.trim().toLowerCase() : '';
+    
+    // Show loading indicator
+    usersTable.innerHTML = '<tr><td colspan="6" class="text-center">Loading users...</td></tr>';
+    
+    // Get token from localStorage
+    const token = localStorage.getItem('adminToken');
+    
+    if (!token) {
+      usersTable.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Authentication required. Please log in.</td></tr>';
+      return;
+    }
+    
+    console.log('Loading users with token:', token);
+    
+    // Fetch users from API
+    fetch('/api/admin/users', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Unauthorized: Please log in as an admin');
+          }
+          throw new Error('Failed to fetch users');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Users data received:', data);
+        
+        // Check if data is in the expected format
+        const allUsers = Array.isArray(data) ? data : 
+                     (data.users ? data.users : 
+                     (data.data ? data.data : []));
+        
+        console.log('Processed users array:', allUsers);
+        
+        // Filter users based on role and search query
+        const filteredUsers = allUsers.filter(user => {
+          // Role filter - show all users if filter is empty
+          const userRole = user.isAdmin ? 'admin' : 'customer';
+          const passesRoleFilter = roleFilter === '' || 
+                                  userRole.toLowerCase() === roleFilter.toLowerCase();
+          
+          // Search filter
+          let passesSearchFilter = true;
+          if (searchQuery) {
+            const userName = user.name ? user.name.toLowerCase() : '';
+            const userEmail = user.email ? user.email.toLowerCase() : '';
+            
+            passesSearchFilter = userName.includes(searchQuery) || 
+                                userEmail.includes(searchQuery);
+          }
+          
+          return passesRoleFilter && passesSearchFilter;
+        });
+        
+        if (filteredUsers.length === 0) {
+          usersTable.innerHTML = '<tr><td colspan="6" class="text-center">No users found matching your criteria</td></tr>';
+          return;
+        }
+        
+        // Clear the table
+        usersTable.innerHTML = '';
+        
+        // Add users to the table
+        filteredUsers.forEach(user => {
+          const row = document.createElement('tr');
+          row.setAttribute('data-user-id', user._id);
+          
+          // Format the date
+          const joinedDate = new Date(user.createdAt).toLocaleDateString();
+          
+          row.innerHTML = `
+            <td>${user._id}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.isAdmin ? '<span class="badge bg-primary">Admin</span>' : '<span class="badge bg-secondary">Customer</span>'}</td>
+            <td>${joinedDate}</td>
+            <td>
+              <button class="btn btn-sm btn-primary edit-user" data-id="${user._id}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-danger delete-user" data-id="${user._id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          `;
+          
+          usersTable.appendChild(row);
+        });
+        
+        // Set up edit and delete button handlers
+        setupUserActionButtons();
+      })
+      .catch(error => {
+        console.error('Error loading users:', error);
+        usersTable.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading users: ${error.message}</td></tr>`;
+      });
+  }
+  
+  // Function to set up user action buttons
+  function setupUserActionButtons() {
+    // Edit buttons
+    document.querySelectorAll('.edit-user').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-id');
+        openUserEditModal(userId);
+      });
+    });
+    
+    // Delete buttons
+    document.querySelectorAll('.delete-user').forEach(button => {
+      button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-id');
+        if (confirm('Are you sure you want to delete this user?')) {
+          deleteUser(userId);
+        }
+      });
+    });
+  }
+  
+  // Function to open user edit modal
+  function openUserEditModal(userId) {
+    const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+    const modalTitle = document.getElementById('userModalLabel');
+    const userForm = document.getElementById('user-form');
+    const userIdInput = document.getElementById('user-id');
+    
+    // Reset form
+    userForm.reset();
+    
+    if (userId) {
+      modalTitle.textContent = 'Edit User';
+      userIdInput.value = userId;
+      
+      // Fetch user details
+      fetch(`/api/admin/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch user details');
+          }
+          return response.json();
+        })
+        .then(user => {
+          // Fill the form with user details
+          document.getElementById('user-name').value = user.name;
+          document.getElementById('user-email').value = user.email;
+          document.getElementById('user-phone').value = user.phone || '';
+          document.getElementById('user-admin').checked = user.isAdmin || false;
+          
+          // Show the modal
+          userModal.show();
+        })
+        .catch(error => {
+          console.error('Error fetching user details:', error);
+          alert(`Error fetching user details: ${error.message}`);
+        });
+    } else {
+      modalTitle.textContent = 'Add User';
+      userIdInput.value = '';
+      userModal.show();
+    }
+  }
+  
+  // Function to save user
+  function saveUser() {
+    const userId = document.getElementById('user-id').value;
+    const isNewUser = !userId;
+    
+    // Get form values
+    const userData = {
+      name: document.getElementById('user-name').value,
+      email: document.getElementById('user-email').value,
+      phone: document.getElementById('user-phone').value,
+      isAdmin: document.getElementById('user-admin').checked
+    };
+    
+    // Add password only if provided (for new users or password changes)
+    const password = document.getElementById('user-password').value;
+    if (password) {
+      userData.password = password;
+    }
+    
+    // API endpoint and method
+    const url = isNewUser ? '/api/admin/users' : `/api/admin/users/${userId}`;
+    const method = isNewUser ? 'POST' : 'PUT';
+    
+    // Send request
+    fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+      },
+      body: JSON.stringify(userData)
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(errorData => {
+          throw new Error(errorData.message || 'Failed to save user');
+        }).catch(err => {
+          throw new Error('Failed to save user: ' + (err.message || 'Unknown error'));
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Close modal
+      const userModal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+      userModal.hide();
+      
+      // Show success message
+      showToast(`User ${isNewUser ? 'created' : 'updated'} successfully`, 'success');
+      
+      // Reload users
+      loadUsers();
+    })
+    .catch(error => {
+      console.error('Error saving user:', error);
+      showToast(`Error saving user: ${error.message}`, 'danger');
+    });
+  }
+  
+  // Function to delete a user
+  function deleteUser(userId) {
+    fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to delete user');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Show success message
+      showToast('User deleted successfully', 'success');
+      
+      // Reload users
+      loadUsers();
+    })
+    .catch(error => {
+      console.error('Error deleting user:', error);
+      showToast(`Error deleting user: ${error.message}`, 'danger');
+    });
+  }
+  
+  // Add User button
+  const addUserBtn = document.getElementById('add-user-btn');
+  if (addUserBtn) {
+    addUserBtn.addEventListener('click', function() {
+      openUserEditModal();
+    });
+  }
+  
+  // Save User button
+  const saveUserBtn = document.getElementById('save-user-btn');
+  if (saveUserBtn) {
+    saveUserBtn.addEventListener('click', function() {
+      saveUser();
+    });
+  }
+  
+  // Function to delete a product
+  function deleteProduct(productId) {
+    fetch(`/api/products/${productId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken') || ''}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Show success message
+      showToast('Product deleted successfully', 'success');
+      
+      // Reload products
+      loadProducts();
+    })
+    .catch(error => {
+      console.error('Error deleting product:', error);
+      showToast(`Error deleting product: ${error.message}`, 'danger');
+    });
+  }
+  
+  // Add Product button
+  const addProductBtn = document.getElementById('add-product-btn');
+  if (addProductBtn) {
+    addProductBtn.addEventListener('click', function() {
+      openProductEditModal();
+    });
+  }
+  
+  // Save Product button
+  const saveProductBtn = document.getElementById('save-product-btn');
+  if (saveProductBtn) {
+    saveProductBtn.addEventListener('click', function() {
+      saveProduct();
+    });
+  }
+  
+  // Function to save product
+  function saveProduct() {
+    const productId = document.getElementById('product-id').value;
+    const isNewProduct = !productId;
+    
+    // Get form values
+    const productData = {
+      name: document.getElementById('product-name').value,
+      category: document.getElementById('product-category').value,
+      price: parseFloat(document.getElementById('product-price').value),
+      countInStock: parseInt(document.getElementById('product-stock').value),
+      description: document.getElementById('product-description').value || 'No description available',
+      featured: document.getElementById('product-featured').checked,
+      discount: parseInt(document.getElementById('product-discount').value) || 0
+    };
+    
+    // Get selected colors
+    const selectedColors = [];
+    document.querySelectorAll('.color-checkbox:checked').forEach(checkbox => {
+      selectedColors.push(checkbox.value);
+    });
+    productData.color = selectedColors;
+    
+    // Get selected materials
+    const selectedMaterials = [];
+    document.querySelectorAll('.material-checkbox:checked').forEach(checkbox => {
+      selectedMaterials.push(checkbox.value);
+    });
+    // Convert materials array to a comma-separated string to match backend expectations
+    productData.material = selectedMaterials.join(', ');
+    
+    // Handle image upload
+    const imageInput = document.getElementById('product-images');
+    const hasNewImages = imageInput.files && imageInput.files.length > 0;
+    
+    // Create FormData object for file upload
+    const formData = new FormData();
+    
+    // Add all product data to FormData
+    Object.keys(productData).forEach(key => {
+      if (Array.isArray(productData[key])) {
+        // Handle arrays (like colors)
+        productData[key].forEach(value => {
+          formData.append(`${key}[]`, value);
+        });
+      } else {
+        formData.append(key, productData[key]);
+      }
+    });
+    
+    // Add images to FormData if any are selected
+    if (hasNewImages) {
+      for (let i = 0; i < imageInput.files.length; i++) {
+        formData.append('images', imageInput.files[i]);
+      }
+    }
+    
+    // Get authentication token from localStorage
+    const token = localStorage.getItem('adminToken');
+    
+    // API endpoint and method
+    const url = isNewProduct ? '/api/products' : `/api/products/${productId}`;
+    const method = isNewProduct ? 'POST' : 'PUT';
+    
+    console.log('Saving product with data:', productData);
+    console.log('Has new images:', hasNewImages);
+    
+    // Use different approach based on whether we have new images
+    if (hasNewImages) {
+      // Use FormData for file upload
+      fetch(url, {
+        method: method,
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+          // Note: Don't set Content-Type when using FormData, browser will set it with boundary
+        },
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(errorData.message || 'Failed to save product');
+          }).catch(err => {
+            throw new Error('Failed to save product: ' + (err.message || 'Unknown error'));
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Close modal
+        const productModal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
+        productModal.hide();
+        
+        // Show success message
+        showToast(`Product ${isNewProduct ? 'created' : 'updated'} successfully`, 'success');
+        
+        // Reload products
+        loadProducts();
+      })
+      .catch(error => {
+        console.error('Error saving product:', error);
+        // Add more detailed error logging
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        }
+        showToast(`Error saving product: ${error.message}`, 'danger');
+      });
+    } else {
+      // Use JSON for regular updates without images
+      fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(productData)
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(errorData.message || 'Failed to save product');
+          }).catch(err => {
+            throw new Error('Failed to save product: ' + (err.message || 'Unknown error'));
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Close modal
+        const productModal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
+        productModal.hide();
+        
+        // Show success message
+        showToast(`Product ${isNewProduct ? 'created' : 'updated'} successfully`, 'success');
+        
+        // Reload products
+        loadProducts();
+      })
+      .catch(error => {
+        console.error('Error saving product:', error);
+        // Add more detailed error logging
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        }
+        showToast(`Error saving product: ${error.message}`, 'danger');
+      });
+    }
+  }
+  
+  // Initialize the dashboard view
+  dashboardLink.click();
+  
+  // Add event listeners for user filter changes
+  document.addEventListener('DOMContentLoaded', function() {
+    const userRoleFilter = document.getElementById('user-role-filter');
+    const userSearchInput = document.getElementById('user-search');
+    const userSearchBtn = document.getElementById('user-search-btn');
+    
+    if (userRoleFilter) {
+      userRoleFilter.value = ''; // Set to "All Roles" by default
+      userRoleFilter.addEventListener('change', function() {
+        loadUsers();
+      });
+    }
+    
+    if (userSearchBtn) {
+      userSearchBtn.addEventListener('click', function() {
+        loadUsers();
+      });
+    }
+    
+    if (userSearchInput) {
+      userSearchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          loadUsers();
+        }
+      });
+    }
+  });
+  
+  // Add image preview functionality
+  const productImagesInput = document.getElementById('product-images');
+  if (productImagesInput) {
+    productImagesInput.addEventListener('change', function() {
+      const imagePreviewContainer = document.getElementById('image-preview');
+      imagePreviewContainer.innerHTML = '';
+      
+      if (this.files && this.files.length > 0) {
+        for (let i = 0; i < this.files.length; i++) {
+          const file = this.files[i];
+          
+          // Only process image files
+          if (!file.type.match('image.*')) {
+            continue;
+          }
+          
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            const col = document.createElement('div');
+            col.className = 'col-3 mb-2';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'img-thumbnail';
+            img.style.height = '100px';
+            img.style.objectFit = 'cover';
+            
+            col.appendChild(img);
+            imagePreviewContainer.appendChild(col);
+          };
+          
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+  }
+  
+  // Add logout functionality
+  const logoutLink = document.getElementById('logout-link');
+  if (logoutLink) {
+    logoutLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('adminToken');
+      showToast('You have been logged out', 'info');
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 1500);
+    });
+  }
+});
+
+// Function to load orders
+function loadOrders() {
+  const token = localStorage.getItem('adminToken');
+  
+  // Check if token exists
+  if (!token) {
+    showToast('Authentication required', 'danger');
+    return;
+  }
+  
+  // Get filter values
+  const statusFilter = document.getElementById('order-status-filter') ? 
+                      document.getElementById('order-status-filter').value : '';
+  const searchQuery = document.getElementById('order-search') ? 
+                     document.getElementById('order-search').value.trim().toLowerCase() : '';
+  
+  // Show loading indicator
+  const ordersTableBody = document.querySelector('#orders-table');
+  if (ordersTableBody) {
+    ordersTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Loading orders...</td></tr>';
+    
+    // Fetch orders from the database
+    fetch('/api/orders', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+      return response.json();
+    })
+    .then(data => {
+      ordersTableBody.innerHTML = '';
+      
+      // Check if data is in the expected format
+      const allOrders = Array.isArray(data) ? data : 
+                    (data.orders ? data.orders : 
+                    (data.data ? data.data : []));
+      
+      // Filter orders based on status and search query
+      const filteredOrders = allOrders.filter(order => {
+        // Determine the current status
+        let currentStatus = 'Pending';
+        if (order.status) {
+          currentStatus = order.status;
+        } else if (order.isDelivered) {
+          currentStatus = 'Delivered';
+        } else if (order.isShipped) {
+          currentStatus = 'Shipped';
+        } else if (order.isPaid) {
+          currentStatus = 'Processing';
+        }
+        
+        // Status filter - show all orders if filter is empty
+        const passesStatusFilter = statusFilter === '' || 
+                                  currentStatus.toLowerCase() === statusFilter.toLowerCase();
+        
+        // Search filter
+        let passesSearchFilter = true;
+        if (searchQuery) {
+          const orderId = order._id.toLowerCase();
+          const userName = order.user && order.user.name ? order.user.name.toLowerCase() : '';
+          const totalPrice = order.totalPrice.toString();
+          const paymentStatus = order.isPaid ? 'paid' : 'not paid';
+          
+          passesSearchFilter = orderId.includes(searchQuery) || 
+                              userName.includes(searchQuery) || 
+                              totalPrice.includes(searchQuery) || 
+                              paymentStatus.includes(searchQuery);
+        }
+        
+        return passesStatusFilter && passesSearchFilter;
+      });
+      
+      if (filteredOrders.length === 0) {
+        ordersTableBody.innerHTML = '<tr><td colspan="8" class="text-center">No orders found matching your criteria</td></tr>';
+        return;
+      }
+      
+      filteredOrders.forEach(order => {
+        const row = document.createElement('tr');
+        
+        // Determine the current status
+        let currentStatus = 'Pending';
+        if (order.status) {
+          currentStatus = order.status;
+        } else if (order.isDelivered) {
+          currentStatus = 'Delivered';
+        } else if (order.isShipped) {
+          currentStatus = 'Shipped';
+        } else if (order.isPaid) {
+          currentStatus = 'Processing';
+        }
+        
+        // Create status dropdown
+        const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+        let statusDropdown = `
+          <select class="form-select form-select-sm status-select" data-id="${order._id}">
+        `;
+        
+        statusOptions.forEach(status => {
+          statusDropdown += `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${status}</option>`;
+        });
+        
+        statusDropdown += `</select>`;
+        
+        row.innerHTML = `
+          <td>${order._id}</td>
+          <td>${order.user ? order.user.name : 'Unknown User'}</td>
+          <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+          <td>$${order.totalPrice.toFixed(2)}</td>
+          <td>${order.isPaid ? 'Paid' : 'Not Paid'}</td>
+          <td>${statusDropdown}</td>
+          <td>
+            <button class="btn btn-sm btn-info view-order-btn" data-id="${order._id}">View</button>
+            <button class="btn btn-sm btn-danger delete-order-btn" data-id="${order._id}">Delete</button>
+          </td>
+        `;
+        ordersTableBody.appendChild(row);
+      });
+      
+      // Add event listeners to view buttons
+      document.querySelectorAll('.view-order-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const orderId = this.getAttribute('data-id');
+          // Implement view order details functionality
+          console.log('View order:', orderId);
+        });
+      });
+      
+      // Add event listeners to delete buttons
+      document.querySelectorAll('.delete-order-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const orderId = this.getAttribute('data-id');
+          if (confirm('Are you sure you want to delete this order?')) {
+            deleteOrder(orderId);
+          }
+        });
+      });
+      
+      // Add event listeners to status selects
+      document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+          const orderId = this.getAttribute('data-id');
+          const newStatus = this.value;
+          updateOrderStatus(orderId, newStatus);
+        });
+      });
+    })
+    .catch(error => {
+      console.error('Error loading orders:', error);
+      ordersTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading orders</td></tr>';
+      showToast('Failed to load orders: ' + error.message, 'danger');
+    });
+  } else {
+    console.error('Orders table body not found');
+    showToast('Error: Orders table not found in the DOM', 'danger');
+  }
+}
+
+// Function to update order status
+function updateOrderStatus(orderId, status) {
+  const token = localStorage.getItem('adminToken');
+  
+  if (!token) {
+    showToast('Authentication required', 'danger');
+    return;
+  }
+  
+  // Show loading toast
+  showToast(`Updating order status to ${status}...`, 'info');
+  
+  fetch(`/api/orders/${orderId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ status })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to update order status');
+    }
+    return response.json();
+  })
+  .then(data => {
+    showToast(`Order status updated to ${status}`, 'success');
+    
+    // If status is "Delivered", also update the delivered status
+    if (status === 'Delivered') {
+      fetch(`/api/orders/${orderId}/deliver`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to mark order as delivered');
+        }
+        return response.json();
+      })
+      .catch(error => {
+        console.error('Error marking order as delivered:', error);
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error updating order status:', error);
+    showToast(`Error updating order status: ${error.message}`, 'danger');
+  });
+}
+
+// Function to delete an order
+function deleteOrder(orderId) {
+  const token = localStorage.getItem('adminToken');
+  
+  if (!token) {
+    showToast('Authentication required', 'danger');
+    return;
+  }
+  
+  fetch(`/api/orders/${orderId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to delete order');
+    }
+    return response.json();
+  })
+  .then(data => {
+    showToast('Order deleted successfully', 'success');
+    loadOrders(); // Reload the orders list
+  })
+  .catch(error => {
+    console.error('Error deleting order:', error);
+    showToast(`Error deleting order: ${error.message}`, 'danger');
+  });
+}
+// Function to load reviews
+function loadReviews() {
+  const token = localStorage.getItem('adminToken');
+  
+  // Check if token exists
+  if (!token) {
+    showToast('Authentication required', 'danger');
+    return;
+  }
+  
+  // Show loading indicator
+  const reviewsContainer = document.getElementById('reviews-content');
+  if (reviewsContainer) {
+    reviewsContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    
+    // Fetch all products first to get their reviews
+    fetch('/api/products', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Check if data is in the expected format
+      const products = Array.isArray(data) ? data : 
+                      (data.products ? data.products : 
+                      (data.data ? data.data : []));
+      
+      // Extract all reviews from products
+      let allReviews = [];
+      products.forEach(product => {
+        if (product.reviews && Array.isArray(product.reviews)) {
+          // Add product info to each review
+          const productReviews = product.reviews.map(review => ({
+            ...review,
+            productName: product.name,
+            productId: product._id
+          }));
+          allReviews = [...allReviews, ...productReviews];
+        }
+      });
+      
+      if (allReviews.length === 0) {
+        reviewsContainer.innerHTML = '<div class="alert alert-info">No reviews found</div>';
+        return;
+      }
+      
+      // Create a table to display reviews
+      let tableHTML = `
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+      
+      allReviews.forEach(review => {
+        const date = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Unknown';
+        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+        
+        tableHTML += `
+          <tr>
+            <td>${review.productName || 'Unknown Product'}</td>
+            <td>${review.name || 'Anonymous'}</td>
+            <td><span class="text-warning">${stars}</span> (${review.rating})</td>
+            <td>${review.comment || 'No comment'}</td>
+            <td>${date}</td>
+            <td>
+              <button class="btn btn-sm btn-danger delete-review-btn" data-product-id="${review.productId}" data-review-id="${review._id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableHTML += `
+            </tbody>
+          </table>
+        </div>
+      `;
+      
+      reviewsContainer.innerHTML = tableHTML;
+      
+      // Add event listeners to delete buttons
+      document.querySelectorAll('.delete-review-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const productId = this.getAttribute('data-product-id');
+          const reviewId = this.getAttribute('data-review-id');
+          
+          if (confirm('Are you sure you want to delete this review?')) {
+            deleteReview(productId, reviewId);
+          }
+        });
+      });
+    })
+    .catch(error => {
+      console.error('Error loading reviews:', error);
+      reviewsContainer.innerHTML = `<div class="alert alert-danger">Error loading reviews: ${error.message}</div>`;
+    });
+  } else {
+    console.error('Reviews container not found');
+    showToast('Error: Reviews container not found in the DOM', 'danger');
+  }
+}
+
+// Function to delete a review
+function deleteReview(productId, reviewId) {
+  const token = localStorage.getItem('adminToken');
+  
+  if (!token) {
+    showToast('Authentication required', 'danger');
+    return;
+  }
+  
+  fetch(`/api/admin/products/${productId}/reviews/${reviewId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to delete review');
+    }
+    return response.json();
+  })
+  .then(data => {
+    showToast('Review deleted successfully', 'success');
+    loadReviews(); // Reload the reviews
+  })
+  .catch(error => {
+    console.error('Error deleting review:', error);
+    showToast(`Error deleting review: ${error.message}`, 'danger');
+  });
+}

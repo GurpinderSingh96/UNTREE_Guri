@@ -1,0 +1,71 @@
+/* Custom styles for the admin panel */
+
+/* Color box styles */
+.color-box {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.color-checkbox {
+  display: none;
+}
+
+.color-checkbox:checked + .color-box {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0d6efd;
+}
+
+/* Custom color badges for product table */
+.badge.bg-red {
+  background-color: red !important;
+  color: white;
+}
+
+.badge.bg-black {
+  background-color: black !important;
+  color: white;
+}
+
+.badge.bg-white {
+  background-color: white !important;
+  color: black;
+  border: 1px solid #ccc;
+}
+
+.badge.bg-blue {
+  background-color: blue !important;
+  color: white;
+}
+
+.badge.bg-green {
+  background-color: green !important;
+  color: white;
+}
+
+.badge.bg-yellow {
+  background-color: yellow !important;
+  color: black;
+}
+
+.badge.bg-purple {
+  background-color: purple !important;
+  color: white;
+}
+
+.badge.bg-orange {
+  background-color: orange !important;
+  color: black;
+}
+
+.badge.bg-pink {
+  background-color: pink !important;
+  color: black;
+}
+
+/* Form styles */
+.form-check-inline {
+  margin-right: 10px;
+}

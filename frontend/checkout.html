@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="Untree.co">
+  <link rel="shortcut icon" href="favicon.png">
+
+  <meta name="description" content="" />
+  <meta name="keywords" content="bootstrap, bootstrap4" />
+
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="css/tiny-slider.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <!-- Stripe JS -->
+  <script src="https://js.stripe.com/v3/"></script>
+  <title>Checkout - Guri</title>
+  <style>
+    /* Custom styles for checkout page */
+    .product-image {
+      max-width: 60px;
+      max-height: 60px;
+      object-fit: contain;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    
+    .order-item {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .order-item:last-child {
+      border-bottom: none;
+    }
+    
+    .site-block-order-table th, 
+    .site-block-order-table td {
+      padding: 15px;
+      vertical-align: middle;
+    }
+    
+    .item-details {
+      display: flex;
+      align-items: center;
+    }
+    
+    .item-info {
+      margin-left: 15px;
+    }
+    
+    .item-name {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    
+    .item-meta {
+      font-size: 0.85rem;
+      color: #6c757d;
+    }
+    
+    .item-price {
+      font-weight: 500;
+    }
+    
+    .item-original-price {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 0.85rem;
+    }
+    
+    .checkout-summary {
+      background-color: #f9f9f9;
+      border-radius: 5px;
+      padding: 20px;
+    }
+    
+    /* Stripe Element styling */
+    .StripeElement {
+      box-sizing: border-box;
+      height: 40px;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      background-color: white;
+      transition: box-shadow 150ms ease;
+    }
+
+    .StripeElement--focus {
+      box-shadow: 0 1px 3px 0 #cfd7df;
+    }
+
+    .StripeElement--invalid {
+      border-color: #fa755a;
+    }
+
+    .StripeElement--webkit-autofill {
+      background-color: #fefde5 !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Include Header/Navigation -->
+  <div include-html="includes/header.html"></div>
+
+  <!-- Start Hero Section -->
+  <div class="hero">
+    <div class="container">
+      <div class="row justify-content-between">
+        <div class="col-lg-5">
+          <div class="intro-excerpt">
+            <h1>Checkout</h1>
+            <p class="mb-4">Complete your order by providing shipping and payment details.</p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Hero Section -->
+
+  <!-- Start Checkout Section -->
+  <div class="untree_co-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 mb-5 mb-md-0">
+          <h2 class="h3 mb-3 text-black">Billing Details</h2>
+          <div class="p-3 p-lg-5 border bg-white">
+            <form id="checkout-form">
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="name" class="text-black">Full Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+              </div>
+
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="email" class="text-black">Email Address <span class="text-danger">*</span></label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+              </div>
+
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="phone" class="text-black">Phone <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="phone" name="phone" required>
+                </div>
+              </div>
+
+              <div class="form-group row mb-3">
+                <div class="col-md-12">
+                  <label for="address" class="text-black">Address <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="address" name="address" placeholder="Street address" required>
+                </div>
+              </div>
+
+              <div class="form-group row mb-3">
+                <div class="col-md-6">
+                  <label for="city" class="text-black">City <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="city" name="city" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="postal_code" class="text-black">Postal / Zip <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="postal_code" name="postal_code" required>
+                </div>
+              </div>
+
+              <div class="form-group row mb-3">
+                <div class="col-md-6">
+                  <label for="state" class="text-black">State / Province <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="state" name="state" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="country" class="text-black">Country <span class="text-danger">*</span></label>
+                  <select id="country" class="form-control" required>
+                    <option value="">Select a country</option>
+                    <option value="US">United States</option>
+                    <option value="CA">Canada</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="AU">Australia</option>
+                    <option value="DE">Germany</option>
+                    <option value="FR">France</option>
+                    <option value="JP">Japan</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group mb-5">
+                <label for="order_notes" class="text-black">Order Notes</label>
+                <textarea name="order_notes" id="order_notes" cols="30" rows="5" class="form-control" placeholder="Write your notes here..."></textarea>
+              </div>
+
+              <h2 class="h3 mb-3 text-black">Payment</h2>
+              
+              <div class="form-group">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="payment_method" id="payment_credit_card" value="credit_card" checked>
+                  <label class="form-check-label" for="payment_credit_card">
+                    Credit Card (Stripe)
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="payment_method" id="payment_paypal" value="paypal">
+                  <label class="form-check-label" for="payment_paypal">
+                    PayPal
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="payment_method" id="payment_cash" value="cash_on_delivery">
+                  <label class="form-check-label" for="payment_cash">
+                    Cash on Delivery
+                  </label>
+                </div>
+              </div>
+              
+              <div id="credit_card_fields" class="mt-3">
+                <div class="form-group mb-3">
+                  <label for="card-element">Credit or debit card</label>
+                  <div id="card-element" class="form-control py-3">
+                    <!-- Stripe Element will be inserted here -->
+                  </div>
+                  <div id="card-errors" class="text-danger mt-2" role="alert"></div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <div class="alert alert-danger d-none" id="error-message"></div>
+              </div>
+              
+              <div class="form-group">
+                <button class="btn btn-black btn-lg py-3 btn-block" type="submit">Place Order</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="row mb-5">
+            <div class="col-md-12">
+              <h2 class="h3 mb-3 text-black">Your Order</h2>
+              <div class="p-3 p-lg-5 border bg-white">
+                <table class="table site-block-order-table mb-5">
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="order-summary">
+                    <!-- Order items will be loaded dynamically here -->
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
+                      <td class="text-black" id="cart-subtotal">$0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="text-black font-weight-bold"><strong>Shipping</strong></td>
+                      <td class="text-black" id="shipping-cost">$0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
+                      <td class="text-black font-weight-bold"><strong id="order-total">$0.00</strong></td>
+                    </tr>
+                  </tfoot>
+                </table>
+
+                <div class="border p-3 mb-3">
+                  <h3 class="h6 mb-0"><a class="d-block" data-bs-toggle="collapse" href="#collapsebank" role="button" aria-expanded="false" aria-controls="collapsebank">Direct Bank Transfer</a></h3>
+
+                  <div class="collapse" id="collapsebank">
+                    <div class="py-2">
+                      <p class="mb-0">Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won't be shipped until the funds have cleared in our account.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border p-3 mb-3">
+                  <h3 class="h6 mb-0"><a class="d-block" data-bs-toggle="collapse" href="#collapsecheque" role="button" aria-expanded="false" aria-controls="collapsecheque">Cheque Payment</a></h3>
+
+                  <div class="collapse" id="collapsecheque">
+                    <div class="py-2">
+                      <p class="mb-0">Please send your cheque to Store Name, Store Street, Store Town, Store State / County, Store Postcode.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border p-3 mb-5">
+                  <h3 class="h6 mb-0"><a class="d-block" data-bs-toggle="collapse" href="#collapsepaypal" role="button" aria-expanded="false" aria-controls="collapsepaypal">PayPal</a></h3>
+
+                  <div class="collapse" id="collapsepaypal">
+                    <div class="py-2">
+                      <p class="mb-0">Pay via PayPal; you can pay with your credit card if you don't have a PayPal account.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Checkout Section -->
+
+  <!-- Include Footer -->
+  <div include-html="includes/footer.html"></div>
+
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/tiny-slider.js"></script>
+  <script src="js/custom.js"></script>
+  <script src="js/include-html.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/countries.js"></script>
+  <script src="js/checkout.js"></script>
+  <script>
+    // Populate country dropdown when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.countryUtils) {
+        window.countryUtils.populateCountryDropdown('country');
+      }
+    });
+  </script>
+</body>
+</html>

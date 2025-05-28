@@ -1,0 +1,30 @@
+/* Custom styles for index page */
+
+/* Product price styling for discounted items */
+.product-price-original {
+  font-size: 0.85em;
+  color: #999;
+}
+
+/* Loading spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  margin: 2rem auto;
+}
+
+/* Product hover effect */
+.product-item {
+  transition: transform 0.3s ease;
+}
+
+.product-item:hover {
+  transform: translateY(-5px);
+}
+
+/* Product image container - maintain aspect ratio */
+.product-thumbnail {
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  width: 100%;
+}

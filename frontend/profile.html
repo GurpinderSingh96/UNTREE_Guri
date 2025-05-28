@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="Untree.co">
+  <link rel="shortcut icon" href="favicon.png">
+
+  <meta name="description" content="" />
+  <meta name="keywords" content="bootstrap, bootstrap4" />
+
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="css/tiny-slider.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <title>My Profile - Guri</title>
+  <style>
+    .profile-section {
+      padding: 50px 0;
+    }
+    
+    .profile-card {
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    
+    .profile-card-header {
+      background-color: #3b5d50;
+      color: white;
+      padding: 20px;
+    }
+    
+    .profile-card-body {
+      padding: 30px;
+      background-color: white;
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: #3b5d50;
+    }
+    
+    .nav-pills .nav-link {
+      color: #333;
+    }
+    
+    .nav-pills .nav-link.active {
+      color: white;
+    }
+    
+    .tab-pane {
+      padding: 20px 0;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .alert-success {
+      background-color: #d1e7dd;
+      border-color: #badbcc;
+      color: #0f5132;
+    }
+    
+    .btn-primary {
+      background-color: #3b5d50;
+      border-color: #3b5d50;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2d4a3e;
+      border-color: #2d4a3e;
+    }
+    
+    .btn-outline-primary {
+      color: #3b5d50;
+      border-color: #3b5d50;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: #3b5d50;
+      color: white;
+    }
+    
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Include Header/Navigation -->
+  <div include-html="includes/header.html"></div>
+
+  <!-- Start Hero Section -->
+  <div class="hero">
+    <div class="container">
+      <div class="row justify-content-between">
+        <div class="col-lg-5">
+          <div class="intro-excerpt">
+            <h1>My Profile</h1>
+            <p class="mb-4">Manage your account information and preferences.</p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Hero Section -->
+
+  <!-- Start Profile Section -->
+  <div class="profile-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3 mb-4">
+          <div class="profile-card">
+            <div class="profile-card-header">
+              <h5 class="mb-0">Account</h5>
+            </div>
+            <div class="profile-card-body p-0">
+              <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="true">
+                  <i class="fas fa-user me-2"></i> Personal Information
+                </button>
+                <button class="nav-link" id="v-pills-address-tab" data-bs-toggle="pill" data-bs-target="#v-pills-address" type="button" role="tab" aria-controls="v-pills-address" aria-selected="false">
+                  <i class="fas fa-map-marker-alt me-2"></i> Address
+                </button>
+                <button class="nav-link" id="v-pills-password-tab" data-bs-toggle="pill" data-bs-target="#v-pills-password" type="button" role="tab" aria-controls="v-pills-password" aria-selected="false">
+                  <i class="fas fa-lock me-2"></i> Change Password
+                </button>
+                <a href="my-orders.html" class="nav-link">
+                  <i class="fas fa-box me-2"></i> My Orders
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-9">
+          <div class="profile-card">
+            <div class="profile-card-body">
+              <!-- Loading spinner -->
+              <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              
+              <!-- Profile content -->
+              <div class="profile-content d-none">
+                <div class="alert alert-success d-none" id="success-message" role="alert"></div>
+                <div class="alert alert-danger d-none" id="error-message" role="alert"></div>
+                
+                <div class="tab-content" id="v-pills-tabContent">
+                  <!-- Personal Information Tab -->
+                  <div class="tab-pane fade show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                    <h3 class="mb-4">Personal Information</h3>
+                    <form id="profile-form">
+                      <div class="row">
+                        <div class="col-md-6 form-group">
+                          <label for="name" class="form-label">Full Name</label>
+                          <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 form-group">
+                          <label for="email" class="form-label">Email Address</label>
+                          <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                  </div>
+                  
+                  <!-- Address Tab -->
+                  <div class="tab-pane fade" id="v-pills-address" role="tabpanel" aria-labelledby="v-pills-address-tab">
+                    <h3 class="mb-4">Address Information</h3>
+                    <form id="address-form">
+                      <div class="form-group">
+                        <label for="street" class="form-label">Street Address</label>
+                        <input type="text" class="form-control" id="street" name="street">
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 form-group">
+                          <label for="city" class="form-label">City</label>
+                          <input type="text" class="form-control" id="city" name="city">
+                        </div>
+                        <div class="col-md-6 form-group">
+                          <label for="state" class="form-label">State/Province</label>
+                          <input type="text" class="form-control" id="state" name="state">
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 form-group">
+                          <label for="postalCode" class="form-label">Postal/ZIP Code</label>
+                          <input type="text" class="form-control" id="postalCode" name="postalCode">
+                        </div>
+                        <div class="col-md-6 form-group">
+                          <label for="country" class="form-label">Country</label>
+                          <select class="form-control" id="country" name="country">
+                            <option value="">Select a country</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="AU">Australia</option>
+                            <option value="DE">Germany</option>
+                            <option value="FR">France</option>
+                            <option value="JP">Japan</option>
+                          </select>
+                        </div>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Save Address</button>
+                    </form>
+                  </div>
+                  
+                  <!-- Change Password Tab -->
+                  <div class="tab-pane fade" id="v-pills-password" role="tabpanel" aria-labelledby="v-pills-password-tab">
+                    <h3 class="mb-4">Change Password</h3>
+                    <form id="password-form">
+                      <div class="form-group">
+                        <label for="currentPassword" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                        <small class="form-text text-muted">Password must be at least 6 characters long.</small>
+                      </div>
+                      <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Update Password</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Profile Section -->
+
+  <!-- Include Footer -->
+  <div include-html="includes/footer.html"></div>
+
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script src="js/tiny-slider.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/include-html.js"></script>
+  <script src="js/countries.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/custom.js"></script>
+  <script>
+    // Populate country dropdown when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.countryUtils) {
+        window.countryUtils.populateCountryDropdown('country');
+      }
+    });
+  </script>
+</body>
+</html>
