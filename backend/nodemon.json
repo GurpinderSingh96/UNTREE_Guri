@@ -1,0 +1,9 @@
+{
+  "ignore": ["node_modules/*", ".git/*", "*.log", "public/*"],
+  "delay": "1000",
+  "verbose": true,
+  "watch": ["controllers", "models", "routes", "utils", "server.js", ".env"],
+  "legacyWatch": true,
+  "polling": true,
+  "pollingInterval": 500
+}
