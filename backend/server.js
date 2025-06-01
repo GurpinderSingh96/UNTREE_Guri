@@ -148,12 +148,12 @@ app.get('*', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5006;
+const PORT = process.env.PORT || 5003;
 
 // Start server with proper error handling
 const server = app.listen(PORT, () => {
   console.timeEnd('Server startup');
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port http://localhost:${PORT}`);
   console.log(`🔧 Admin panel: http://localhost:${PORT}/admin`);
 });
 
