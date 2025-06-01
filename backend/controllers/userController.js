@@ -38,7 +38,7 @@ const validatePassword = (password) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password,isAdmin } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -57,6 +57,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password,
+      isAdmin,
       isVerified: process.env.NODE_ENV !== 'production' // Auto-verify in development
     });
 
